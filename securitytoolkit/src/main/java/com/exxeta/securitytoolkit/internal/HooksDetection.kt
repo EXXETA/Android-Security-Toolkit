@@ -1,14 +1,20 @@
 package com.exxeta.securitytoolkit.internal
 
-import android.content.Context
 import java.io.BufferedReader
 import java.io.FileReader
 import java.net.InetSocketAddress
 import java.net.Socket
 
+/**
+ * A Detector object for Hooks
+ */
 internal object HooksDetection {
 
-    @Throws(RuntimeException::class)
+    /**
+     * Exposes public API to check for hooks
+     *
+     * @return true if hooks are detected
+     */
     fun threatDetected(): Boolean {
         return isFridaServerListening() || isFridaLoaded()
     }
@@ -30,7 +36,6 @@ internal object HooksDetection {
     /**
      * Will check if frida is loaded in /proc/self/maps
      */
-    @Throws(RuntimeException::class)
     private fun isFridaLoaded(): Boolean {
         try {
             val br = BufferedReader(FileReader("/proc/self/maps"))
@@ -40,7 +45,7 @@ internal object HooksDetection {
             br.close()
             return hasFrida
         } catch (e: Throwable) {
-            throw RuntimeException("Could not check for maps: $e")
+            return false
         }
     }
 }
