@@ -1,5 +1,9 @@
 # Mobile Security Toolkit
 
+![License](https://img.shields.io/github/license/EXXETA/Android-Security-Toolkit.svg?style=flat-square)
+![Release](https://img.shields.io/github/release/EXXETA/Android-Security-Toolkit.svg?style=flat-square)
+![Jitpack Release](https://jitpack.io/v/EXXETA/Android-Security-Toolkit.svg?style=flat-square)
+
 <img src="./docs/1.png" width=300  alt="screenshot"/>
 
 In a world where mobile devices hold vast amounts of personal and
@@ -17,7 +21,7 @@ Already implemented Features are:
 - [x] Hooks Detection
 - [x] Simulator Detection
 
-You can see them in action with the [Example App](./app)
+You can see them in action with the [Example App](./example)
 we've provided
 
 ## Installation
@@ -27,9 +31,33 @@ Maven Central
 
 ### Maven Central
 
+`Not Available`
+
+### Jitpack
+
+See [Jitpack page](https://jitpack.io/#EXXETA/Android-Security-Toolkit)
+
+Setup root `build.gradle.kts`:
+
+```
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            name = "Jitpack"
+            url = uri("https://jitpack.io")
+        }
+    }
+}
+```
+
+Import in project `build.gradle.kts`:
+
 ```
 dependencies {
-    implementation 'com.exxeta:security-toolkit:1.0.0'
+    implementation("com.exxeta:security-toolkit:1.0.1")
 }
 ```
 
@@ -85,8 +113,8 @@ See [CONTRIBUTING](./CONTRIBUTING.md)
 
 Authors:
 
-- Yessine Choura
-- Denis Dobanda
+- [Yessine Choura](https://github.com/ychoura)
+- [Denis Dobanda](https://github.com/theDeniZ)
 
 Special Thanks:
 
