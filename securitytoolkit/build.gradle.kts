@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("maven-publish")
-    signing
 }
 
 android {
@@ -138,9 +137,4 @@ publishing {
             }
         }
     }
-}
-
-signing {
-    setRequired({ isReleaseBuild() })
-    sign(publishing.publications["release"])
 }
