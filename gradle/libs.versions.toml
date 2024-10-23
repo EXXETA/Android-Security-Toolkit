@@ -1,0 +1,22 @@
+[versions]
+android-compile-sdk = "35"
+android-min-sdk = "28"
+android-build-tools = "35.0.0"
+android-ndk = "27.0.12077973"
+agp = "8.2.0"
+kotlin = "1.9.0"
+jetbrainsKotlinJvm = "1.9.0"
+kotlinxCoroutinesCore = "1.8.1"
+rootbeerLib = "0.1.0"
+detekt = "1.23.3"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+rootbeer-lib = { module = "com.scottyab:rootbeer-lib", version.ref = "rootbeerLib" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
