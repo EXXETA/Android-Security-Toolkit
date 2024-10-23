@@ -17,8 +17,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            name = "Snapshot"
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+            name = "Jitpack"
+            url = uri("https://jitpack.io")
         }
     }
 }
