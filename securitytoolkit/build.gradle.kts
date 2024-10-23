@@ -1,16 +1,40 @@
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
+    libs.plugins.android.library
+    libs.plugins.jetbrains.kotlin.android
     id("maven-publish")
+    signing
 }
 
 android {
-    compileSdk = 35
     namespace = "com.exxeta.securitytoolkit"
-    buildToolsVersion = "35.0.0"
+
+    compileSdk =
+        libs.versions.android.compile.sdk
+            .get()
+            .toInt()
+    buildToolsVersion =
+        libs.versions.android.build.tools
+            .get()
+    ndkVersion =
+        libs.versions.android.ndk
+            .get()
 
     defaultConfig {
-        minSdk = 28
+        minSdk =
+            libs.versions.android.min.sdk
+                .get()
+                .toInt()
+
+        ndk {
+            abiFilters.addAll(
+                setOf(
+                    "x86",
+                    "x86_64",
+                    "armeabi-v7a",
+                    "arm64-v8a"
+                )
+            )
+        }
     }
 
     compileOptions {
@@ -28,41 +52,95 @@ android {
             )
         }
     }
+
+    publishing {
+        singleVariant("release") {
+            withJavadocJar()
+        }
+    }
 }
 
 dependencies {
-    implementation("com.scottyab:rootbeer-lib:0.1.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation(libs.rootbeer.lib)
+    implementation(libs.kotlinx.coroutines.core)
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+// MARK: - Release management
+
+// helper method to ensure we have a non null string for a property
+fun getPropertyOrEmpty(propertyName: String): String =
+    project.findProperty(propertyName)?.toString().orEmpty()
+
+
+project.version = getPropertyOrEmpty("VERSION_NAME")
+project.group = getPropertyOrEmpty("GROUP")
+
+
+fun isReleaseBuild(): Boolean =
+    !getPropertyOrEmpty("VERSION_NAME").contains("SNAPSHOT")
+
+fun getReleaseRepositoryUrl(): String =
+    getPropertyOrEmpty("RELEASE_REPOSITORY_URL")
+
+fun getSnapshotRepositoryUrl(): String =
+    getPropertyOrEmpty("SNAPSHOT_REPOSITORY_URL")
+
+fun getRepositoryUsername(): String = getPropertyOrEmpty("NEXUS_USERNAME")
+
+fun getRepositoryPassword(): String = getPropertyOrEmpty("NEXUS_PASSWORD")
 
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "com.exxeta"
-            artifactId = "security-toolkit"
-            version = "0.0.1"
-
+            groupId = getPropertyOrEmpty("GROUP")
+            artifactId = getPropertyOrEmpty("POM_ARTIFACT_ID")
+            version = getPropertyOrEmpty("VERSION_NAME")
             afterEvaluate {
                 from(components["release"])
+            }
+
+            pom {
+                name = getPropertyOrEmpty("POM_NAME")
+                packaging = getPropertyOrEmpty("POM_PACKAGING")
+                description = getPropertyOrEmpty("POM_DESCRIPTION")
+                url = getPropertyOrEmpty("POM_URL")
+
+                scm {
+                    url = getPropertyOrEmpty("POM_SCM_URL")
+                    connection = getPropertyOrEmpty("POM_SCM_CONNECTION")
+                    developerConnection =
+                        getPropertyOrEmpty("POM_SCM_DEV_CONNECTION")
+                }
+
+                licenses {
+                    license {
+                        name = getPropertyOrEmpty("POM_LICENCE_NAME")
+                        url = getPropertyOrEmpty("POM_LICENCE_URL")
+                        distribution = getPropertyOrEmpty("POM_LICENCE_DIST")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = getPropertyOrEmpty("POM_DEVELOPER_ID")
+                        name = getPropertyOrEmpty("POM_DEVELOPER_NAME")
+                        organizationUrl = getPropertyOrEmpty("POM_URL")
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven(url = if (isReleaseBuild()) getReleaseRepositoryUrl() else getSnapshotRepositoryUrl()) {
+            credentials {
+                username = getRepositoryUsername()
+                password = getRepositoryPassword()
             }
         }
     }
 }
 
-/**
- * Disables the execution of specific tasks of type AbstractArchiveTask.
- * It iterates over all tasks of this type and checks if their names are
- * either "releaseSourcesJar" or "debugSourcesJar". If a task has one of these names,
- * its enabled property is set to false, effectively preventing it from executing.
- */
-tasks.withType<AbstractArchiveTask> {
-    if (this.name == "releaseSourcesJar" || this.name == "debugSourcesJar") {
-        enabled = false
-    }
+signing {
+    setRequired({ isReleaseBuild() })
+    sign(publishing.publications["release"])
 }

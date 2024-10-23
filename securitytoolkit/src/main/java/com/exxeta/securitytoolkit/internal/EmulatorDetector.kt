@@ -1,12 +1,19 @@
 package com.exxeta.securitytoolkit.internal
 
-import android.content.Context
 import android.os.Build
 import android.os.Debug
 import java.io.File
 
+/**
+ * A Detector object for Emulators / Simulators
+ */
 internal object EmulatorDetector {
 
+    /**
+     * Exposes public API to detect emulators
+     *
+     * @return true if emulator detected
+     */
     fun threatDetected(): Boolean {
         return hasSuspiciousBuildConfiguration() || hasSuspiciousFiles() || Debug.isDebuggerConnected()
     }
@@ -28,14 +35,17 @@ internal object EmulatorDetector {
                 || Build.HARDWARE.lowercase().contains("nox")
                 || Build.PRODUCT.lowercase().contains("nox")
                 || Build.BOARD.lowercase().contains("nox")
-                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")))
+                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith(
+            "generic"
+        )))
     }
 
     private fun hasSuspiciousFiles(): Boolean {
         val NOX_FILES = arrayOf("fstab.nox", "init.nox.rc", "ueventd.nox.rc")
         val ANDY_FILES = arrayOf("fstab.andy", "ueventd.andy.rc")
         val PIPES = arrayOf("/dev/socket/qemud", "/dev/qemu_pipe")
-        val GENY_FILES = arrayOf("/dev/socket/genyd", "/dev/socket/baseband_genyd")
+        val GENY_FILES =
+            arrayOf("/dev/socket/genyd", "/dev/socket/baseband_genyd")
         val X86_FILES = arrayOf(
             "ueventd.android_x86.rc",
             "x86.prop",
