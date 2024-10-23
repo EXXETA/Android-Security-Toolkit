@@ -52,7 +52,7 @@ android {
 }
 
 dependencies {
-    implementation("com.github.EXXETA:Android-Security-Toolkit:develop-SNAPSHOT")
+    implementation(libs.android.security.toolkit)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
