@@ -16,12 +16,16 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            name = "Jitpack"
-            url = uri("https://jitpack.io")
-        }
     }
 }
 
 rootProject.name = "Mobile Security Toolkit Example"
 include(":app")
+
+includeBuild("../") {
+    dependencySubstitution {
+        substitute(
+            module("com.local.project:securitytoolkit"),
+        ).using(project(":securitytoolkit"))
+    }
+}

@@ -1,6 +1,7 @@
 package com.exxeta.securitytoolkit
 
 import android.content.Context
+import com.exxeta.securitytoolkit.internal.DevicePasscodeDetection
 import com.exxeta.securitytoolkit.internal.EmulatorDetector
 import com.exxeta.securitytoolkit.internal.HooksDetection
 import com.exxeta.securitytoolkit.internal.RootDetection
@@ -12,12 +13,15 @@ import kotlinx.coroutines.flow.flow
  * variables
  * - [areRootPrivilegesDetected]: to check for root
  * - [areHooksDetected]: to check for injection (hooking) tweaks
- * - [isSimulatorDetected]: to check if the app is running in a simulated environment
+ * - [isSimulatorDetected]: to check if the app is running in a simulated
+ * environment
+ * - [isDeviceWithoutPasscodeDetected]: to check if device is protected with a
+ * passcode
  *
  * Better (safer) way of detection threats is to use the [threats] Flow.
  * Subscribe to it and collect values - threats that were detected
  *
- * @property context - Application Context, required to check for root
+ * @property context - Application Context, required for multiple checks
  */
 class ThreatDetectionCenter(private val context: Context) {
 
@@ -43,6 +47,13 @@ class ThreatDetectionCenter(private val context: Context) {
         get() = EmulatorDetector.threatDetected()
 
     /**
+     * Performs check for Device Passcode presence
+     * Returns `false`, when device is **unprotected**
+     */
+    val isDeviceWithoutPasscodeDetected: Boolean
+        get() = DevicePasscodeDetection.threatDetected(context)
+
+    /**
      * Defines a better way to detect threats. Will contain every threat that
      * is detected
      */
@@ -61,6 +72,9 @@ class ThreatDetectionCenter(private val context: Context) {
             if (EmulatorDetector.threatDetected()) {
                 emit(Threat.SIMULATOR)
             }
+            if (DevicePasscodeDetection.threatDetected(context)) {
+                emit(Threat.DEVICE_WITHOUT_PASSCODE)
+            }
         }
 
     /**
@@ -70,5 +84,6 @@ class ThreatDetectionCenter(private val context: Context) {
         ROOT_PRIVILEGES,
         HOOKS,
         SIMULATOR,
+        DEVICE_WITHOUT_PASSCODE,
     }
 }

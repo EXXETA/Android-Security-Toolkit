@@ -59,6 +59,13 @@ fun ThreatStatusList() {
             "Running the application in an Emulator",
             reportedThreats.contains(ThreatDetectionCenter.Threat.SIMULATOR),
         ),
+        ThreatStatus(
+            "Passcode",
+            "Indicates if current device is unprotected with a passcode. Biometric protection requires a passcode to be set up",
+            reportedThreats.contains(
+                ThreatDetectionCenter.Threat.DEVICE_WITHOUT_PASSCODE,
+            ),
+        ),
     )
 
     LazyColumn(
