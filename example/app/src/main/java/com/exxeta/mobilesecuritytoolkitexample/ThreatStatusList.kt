@@ -68,10 +68,15 @@ fun ThreatStatusList() {
         ),
         ThreatStatus(
             "Hardware protection",
-            "Refers to hardware capabilities of current device, specific to hardware-backed cryptography operations. If not available, no additional hardware security layer can be used when working with keys, certificates and keychain.",
+            "Refers to hardware capabilities of current device, specific to hardware-backed cryptography operations. If not available, no additional hardware security layer can be used when working with keys, certificates and keychain",
             reportedThreats.contains(
                 ThreatDetectionCenter.Threat.HARDWARE_PROTECTION_UNAVAILABLE,
             ),
+        ),
+        ThreatStatus(
+            "Signature missmatch",
+            "Expects app to be signed with a given certificate. For PlayStore should match the one provided by the store via Play Console",
+            detectionCenter.hasAppSignatureMissmatch("INVALID"),
         ),
     )
 

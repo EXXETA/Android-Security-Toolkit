@@ -22,6 +22,7 @@ Already implemented Features are:
 - [x] Simulator Detection
 - [x] Device Passcode Check
 - [x] Hardware Security Check
+- [x] App Signature Check
 
 You can see them in action with the [Example App](./example)
 we've provided
@@ -101,7 +102,6 @@ reportedThreats.contains(ThreatDetectionCenter.Threat.SIMULATOR)
 
 Next features to be implemented:
 
-- [ ] App Signature Check
 - [ ] Debugger Detection
 - [ ] Integrity Check
 

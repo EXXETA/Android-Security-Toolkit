@@ -1,6 +1,7 @@
 package com.exxeta.securitytoolkit
 
 import android.content.Context
+import com.exxeta.securitytoolkit.internal.AppSignatureDetection
 import com.exxeta.securitytoolkit.internal.DevicePasscodeDetection
 import com.exxeta.securitytoolkit.internal.EmulatorDetector
 import com.exxeta.securitytoolkit.internal.HardwareSecurityDetection
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.flow
  * passcode
  * - [isHardwareProtectionUnavailable]: to check if device can use
  * hardware-backed cryptography
+ * - [hasAppSignatureMissmatch]: extract current app signature and match against
+ * expected one
  *
  * Better (safer) way of detection threats is to use the [threats] Flow.
  * Subscribe to it and collect values - threats that were detected
@@ -66,6 +69,21 @@ class ThreatDetectionCenter(private val context: Context) {
         get() = HardwareSecurityDetection.threatDetected(context)
 
     /**
+     * Performs check of app signature (signing certificate SHA-256 hash)
+     * Returns `false`, if expected and current signature does not match
+     *
+     * More: https://stackoverflow.com/questions/38558623/how-to-find-signature-of-apk-file#61807617
+     *
+     * > When distributing via PlayStore, use the SHA-256 Hash from Play Console
+     *
+     * > Otherwise find App signature with apktool
+     *
+     * @throws [RuntimeException] if failed to extract current signature
+     */
+    fun hasAppSignatureMissmatch(expectedSignature: String): Boolean =
+        AppSignatureDetection.threatDetected(context, expectedSignature)
+
+    /**
      * Defines a better way to detect threats. Will contain every threat that
      * is detected
      */
@@ -94,6 +112,7 @@ class ThreatDetectionCenter(private val context: Context) {
             } catch (_: Throwable) {
                 // TODO
             }
+            // TODO: Add app signature check, after ThreatDetectionCenter refactoring
         }
 
     /**
