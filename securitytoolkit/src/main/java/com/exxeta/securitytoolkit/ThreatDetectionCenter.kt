@@ -69,6 +69,6 @@ class ThreatDetectionCenter(private val context: Context) {
     public enum class Threat {
         ROOT_PRIVILEGES,
         HOOKS,
-        SIMULATOR
+        SIMULATOR,
     }
 }

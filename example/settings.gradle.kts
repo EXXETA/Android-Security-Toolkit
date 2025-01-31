@@ -25,4 +25,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Mobile Security Toolkit Example"
 include(":app")
- 

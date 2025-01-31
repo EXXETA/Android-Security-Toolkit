@@ -30,8 +30,8 @@ android {
                     "x86",
                     "x86_64",
                     "armeabi-v7a",
-                    "arm64-v8a"
-                )
+                    "arm64-v8a",
+                ),
             )
         }
     }
@@ -47,7 +47,7 @@ android {
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -70,10 +70,8 @@ dependencies {
 fun getPropertyOrEmpty(propertyName: String): String =
     project.findProperty(propertyName)?.toString().orEmpty()
 
-
 project.version = getPropertyOrEmpty("VERSION_NAME")
 project.group = getPropertyOrEmpty("GROUP")
-
 
 fun isReleaseBuild(): Boolean =
     !getPropertyOrEmpty("VERSION_NAME").contains("SNAPSHOT")
@@ -130,7 +128,9 @@ publishing {
         }
     }
     repositories {
-        maven(url = if (isReleaseBuild()) getReleaseRepositoryUrl() else getSnapshotRepositoryUrl()) {
+        maven(
+            url = if (isReleaseBuild()) getReleaseRepositoryUrl() else getSnapshotRepositoryUrl(),
+        ) {
             credentials {
                 username = getRepositoryUsername()
                 password = getRepositoryPassword()

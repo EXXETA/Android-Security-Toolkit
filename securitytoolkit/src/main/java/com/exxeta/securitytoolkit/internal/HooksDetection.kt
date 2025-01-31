@@ -15,22 +15,18 @@ internal object HooksDetection {
      *
      * @return true if hooks are detected
      */
-    fun threatDetected(): Boolean {
-        return isFridaServerListening() || isFridaLoaded()
-    }
+    fun threatDetected(): Boolean = isFridaServerListening() || isFridaLoaded()
 
     /**
      * Will check if frida is listening
      */
-    private fun isFridaServerListening(): Boolean {
-        return try {
-            val address = InetSocketAddress("127.0.0.1", 27042)
-            val socket = Socket()
-            socket.connect(address, 200)
-            true
-        } catch (e: Throwable) {
-            false
-        }
+    private fun isFridaServerListening(): Boolean = try {
+        val address = InetSocketAddress("127.0.0.1", 27042)
+        val socket = Socket()
+        socket.connect(address, 200)
+        true
+    } catch (e: Throwable) {
+        false
     }
 
     /**

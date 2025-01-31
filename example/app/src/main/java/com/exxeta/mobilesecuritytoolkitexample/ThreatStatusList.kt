@@ -28,7 +28,6 @@ import com.exxeta.securitytoolkit.ThreatDetectionCenter
 
 @Composable
 fun ThreatStatusList() {
-
     val context = LocalContext.current
     val detectionCenter = ThreatDetectionCenter(context)
     detectionCenter.threats
@@ -46,7 +45,9 @@ fun ThreatStatusList() {
         ThreatStatus(
             "Root",
             "Is a way of acquiring privileged control over the operating system of a device. Tools such as Magisk or Shadow can hide the privileged access",
-            reportedThreats.contains(ThreatDetectionCenter.Threat.ROOT_PRIVILEGES),
+            reportedThreats.contains(
+                ThreatDetectionCenter.Threat.ROOT_PRIVILEGES,
+            ),
         ),
         ThreatStatus(
             "Hooks",
@@ -62,7 +63,7 @@ fun ThreatStatusList() {
 
     LazyColumn(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         item {
             Spacer(modifier = Modifier.height(48.dp))
@@ -71,7 +72,7 @@ fun ThreatStatusList() {
                 contentDescription = "stethoscope_24px",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .size(80.dp)
+                    .size(80.dp),
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -80,7 +81,7 @@ fun ThreatStatusList() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Text(
                 text = "Here is a list of the threats that could put you at risk",
@@ -89,7 +90,7 @@ fun ThreatStatusList() {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 textAlign = TextAlign.Center,
-                color = Color.Gray
+                color = Color.Gray,
             )
         }
         items(threats) { item ->
@@ -98,7 +99,7 @@ fun ThreatStatusList() {
                     .padding(8.dp)
                     .fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium,
-                elevation = CardDefaults.cardElevation(1.dp)
+                elevation = CardDefaults.cardElevation(1.dp),
             ) {
                 ThreatStatusRow(threatStatus = item)
             }
