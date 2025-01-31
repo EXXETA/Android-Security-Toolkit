@@ -3,6 +3,7 @@ package com.exxeta.securitytoolkit
 import android.content.Context
 import com.exxeta.securitytoolkit.internal.DevicePasscodeDetection
 import com.exxeta.securitytoolkit.internal.EmulatorDetector
+import com.exxeta.securitytoolkit.internal.HardwareSecurityDetection
 import com.exxeta.securitytoolkit.internal.HooksDetection
 import com.exxeta.securitytoolkit.internal.RootDetection
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +18,8 @@ import kotlinx.coroutines.flow.flow
  * environment
  * - [isDeviceWithoutPasscodeDetected]: to check if device is protected with a
  * passcode
+ * - [isHardwareProtectionUnavailable]: to check if device can use
+ * hardware-backed cryptography
  *
  * Better (safer) way of detection threats is to use the [threats] Flow.
  * Subscribe to it and collect values - threats that were detected
@@ -54,6 +57,15 @@ class ThreatDetectionCenter(private val context: Context) {
         get() = DevicePasscodeDetection.threatDetected(context)
 
     /**
+     * Performs check for hardware backed encryption presence
+     * Returns `false`, when device does **not** support hardware encryption
+     *
+     * @throws [RuntimeException] if any operations with KeyStore have failed
+     */
+    val isHardwareProtectionUnavailable: Boolean
+        get() = HardwareSecurityDetection.threatDetected(context)
+
+    /**
      * Defines a better way to detect threats. Will contain every threat that
      * is detected
      */
@@ -75,6 +87,13 @@ class ThreatDetectionCenter(private val context: Context) {
             if (DevicePasscodeDetection.threatDetected(context)) {
                 emit(Threat.DEVICE_WITHOUT_PASSCODE)
             }
+            try {
+                if (HardwareSecurityDetection.threatDetected(context)) {
+                    emit(Threat.HARDWARE_PROTECTION_UNAVAILABLE)
+                }
+            } catch (_: Throwable) {
+                // TODO
+            }
         }
 
     /**
@@ -85,5 +104,6 @@ class ThreatDetectionCenter(private val context: Context) {
         HOOKS,
         SIMULATOR,
         DEVICE_WITHOUT_PASSCODE,
+        HARDWARE_PROTECTION_UNAVAILABLE,
     }
 }

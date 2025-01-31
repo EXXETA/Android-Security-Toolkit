@@ -66,6 +66,13 @@ fun ThreatStatusList() {
                 ThreatDetectionCenter.Threat.DEVICE_WITHOUT_PASSCODE,
             ),
         ),
+        ThreatStatus(
+            "Hardware protection",
+            "Refers to hardware capabilities of current device, specific to hardware-backed cryptography operations. If not available, no additional hardware security layer can be used when working with keys, certificates and keychain.",
+            reportedThreats.contains(
+                ThreatDetectionCenter.Threat.HARDWARE_PROTECTION_UNAVAILABLE,
+            ),
+        ),
     )
 
     LazyColumn(

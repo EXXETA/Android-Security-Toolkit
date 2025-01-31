@@ -20,6 +20,8 @@ Already implemented Features are:
 - [x] Jailbreak or Root Detection
 - [x] Hooks Detection
 - [x] Simulator Detection
+- [x] Device Passcode Check
+- [x] Hardware Security Check
 
 You can see them in action with the [Example App](./example)
 we've provided
@@ -101,9 +103,7 @@ Next features to be implemented:
 
 - [ ] App Signature Check
 - [ ] Debugger Detection
-- [ ] Device Passcode Check
 - [ ] Integrity Check
-- [ ] Hardware Security Check
 
 ## Contributing
 
