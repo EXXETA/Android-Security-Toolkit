@@ -46,7 +46,9 @@ fun ThreatStatusRow(threatStatus: ThreatStatus) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(CornerSize(size = 4.dp)))
-                    .background(if (threatStatus.isDetected) redColor else greenColor)
+                    .background(
+                        if (threatStatus.isDetected) redColor else greenColor,
+                    ),
             ) {
                 Text(
                     text = if (threatStatus.isDetected) "DETECTED" else "SAFE",
@@ -54,14 +56,14 @@ fun ThreatStatusRow(threatStatus: ThreatStatus) {
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .padding(vertical = 2.dp)
-                        .padding(horizontal = 8.dp)
+                        .padding(horizontal = 8.dp),
                 )
             }
         }
         Text(
             threatStatus.description,
             style = MaterialTheme.typography.titleMedium,
-            color = Color.Gray
+            color = Color.Gray,
         )
     }
 }
@@ -72,8 +74,10 @@ private fun Preview() {
     MobileSecurityToolkitExampleTheme {
         ThreatStatusRow(
             ThreatStatus(
-                "Jailbreak", "Description", false,
-            )
+                "Jailbreak",
+                "Description",
+                false,
+            ),
         )
     }
 }

@@ -16,9 +16,7 @@ internal object RootDetection {
      * @return true if root detected
      */
     @Throws(RuntimeException::class)
-    fun threatDetected(context: Context): Boolean {
-        return isRooted(context)
-    }
+    fun threatDetected(context: Context): Boolean = isRooted(context)
 
     /**
      * Performs check for Root
@@ -30,7 +28,7 @@ internal object RootDetection {
     @Throws(RuntimeException::class)
     private fun isRooted(context: Context): Boolean {
         try {
-            return RootBeer(context).isRooted()
+            return RootBeer(context).isRooted
         } catch (e: Throwable) {
             throw RuntimeException("Could not check for root: $e")
         }
