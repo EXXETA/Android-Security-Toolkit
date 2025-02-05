@@ -47,11 +47,11 @@ fun ThreatStatusRow(threatStatus: ThreatStatus) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(CornerSize(size = 4.dp)))
                     .background(
-                        if (threatStatus.isDetected) redColor else greenColor,
+                        if (threatStatus.isSafe) greenColor else redColor,
                     ),
             ) {
                 Text(
-                    text = if (threatStatus.isDetected) "DETECTED" else "SAFE",
+                    text = if (threatStatus.isSafe) "SAFE" else "UNSAFE",
                     color = MaterialTheme.colorScheme.background,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
@@ -76,7 +76,7 @@ private fun Preview() {
             ThreatStatus(
                 "Jailbreak",
                 "Description",
-                false,
+                true,
             ),
         )
     }
