@@ -6,6 +6,10 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
+import com.exxeta.securitytoolkit.ThreatException
+import com.exxeta.securitytoolkit.ThreatNotPresent
+import com.exxeta.securitytoolkit.ThreatPresent
+import com.exxeta.securitytoolkit.ThreatStatus
 import java.security.KeyStore
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -14,17 +18,21 @@ import javax.crypto.SecretKeyFactory
 /**
  * A Detector object for device passcode presence
  */
-internal object HardwareSecurityDetection {
+internal object HardwareSecurityDetector {
     private const val ANDROID_KEY_STORE_NAME = "AndroidKeyStore"
 
     /**
      * Exposes public API to detect hardware security
-     *
-     * @return true if device is not backed by hardware encryption
-     * @throws [RuntimeException] if keystore operations failed
      */
-    fun threatDetected(context: Context): Boolean =
-        !isEncrypted(context) || !supportHardwareBackedCryptography()
+    internal fun threatDetected(context: Context): ThreatStatus = try {
+        if (!isEncrypted(context) || !supportHardwareBackedCryptography()) {
+            ThreatPresent
+        } else {
+            ThreatNotPresent
+        }
+    } catch (e: Throwable) {
+        ThreatException(e)
+    }
 
     // https://source.android.com/docs/security/features/encryption
     private fun isEncrypted(context: Context): Boolean {

@@ -1,22 +1,31 @@
 package com.exxeta.securitytoolkit.internal
 
 import android.content.Context
+import com.exxeta.securitytoolkit.ThreatException
+import com.exxeta.securitytoolkit.ThreatNotPresent
+import com.exxeta.securitytoolkit.ThreatPresent
+import com.exxeta.securitytoolkit.ThreatStatus
 import com.scottyab.rootbeer.RootBeer
 
 /**
  * A Detector object for Root
  */
-internal object RootDetection {
+internal object RootDetector {
 
     /**
      * Exposes Root check API
      *
      * @param context - required for root check
-     * @throws [RuntimeException] if failed to check
-     * @return true if root detected
      */
-    @Throws(RuntimeException::class)
-    fun threatDetected(context: Context): Boolean = isRooted(context)
+    fun threatDetected(context: Context): ThreatStatus = try {
+        if (isRooted(context)) {
+            ThreatPresent
+        } else {
+            ThreatNotPresent
+        }
+    } catch (e: Throwable) {
+        ThreatException(e)
+    }
 
     /**
      * Performs check for Root
@@ -28,7 +37,8 @@ internal object RootDetection {
     @Throws(RuntimeException::class)
     private fun isRooted(context: Context): Boolean {
         try {
-            return RootBeer(context).isRooted
+            val rootbeer = RootBeer(context).also { it.setLogging(false) }
+            return rootbeer.isRooted
         } catch (e: Throwable) {
             throw RuntimeException("Could not check for root: $e")
         }

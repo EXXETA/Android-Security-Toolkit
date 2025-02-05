@@ -1,5 +1,9 @@
 package com.exxeta.securitytoolkit.internal
 
+import com.exxeta.securitytoolkit.ThreatException
+import com.exxeta.securitytoolkit.ThreatNotPresent
+import com.exxeta.securitytoolkit.ThreatPresent
+import com.exxeta.securitytoolkit.ThreatStatus
 import java.io.BufferedReader
 import java.io.FileReader
 import java.net.InetSocketAddress
@@ -8,14 +12,20 @@ import java.net.Socket
 /**
  * A Detector object for Hooks
  */
-internal object HooksDetection {
+internal object HooksDetector {
 
     /**
      * Exposes public API to check for hooks
-     *
-     * @return true if hooks are detected
      */
-    fun threatDetected(): Boolean = isFridaServerListening() || isFridaLoaded()
+    fun threatDetected(): ThreatStatus = try {
+        if (isFridaServerListening() || isFridaLoaded()) {
+            ThreatPresent
+        } else {
+            ThreatNotPresent
+        }
+    } catch (e: Throwable) {
+        ThreatException(e)
+    }
 
     /**
      * Will check if frida is listening

@@ -1,128 +1,176 @@
 package com.exxeta.securitytoolkit
 
 import android.content.Context
-import com.exxeta.securitytoolkit.internal.AppSignatureDetection
-import com.exxeta.securitytoolkit.internal.DevicePasscodeDetection
+import com.exxeta.securitytoolkit.internal.AppSignatureDetector
+import com.exxeta.securitytoolkit.internal.DevicePasscodeDetector
 import com.exxeta.securitytoolkit.internal.EmulatorDetector
-import com.exxeta.securitytoolkit.internal.HardwareSecurityDetection
-import com.exxeta.securitytoolkit.internal.HooksDetection
-import com.exxeta.securitytoolkit.internal.RootDetection
-import kotlinx.coroutines.flow.Flow
+import com.exxeta.securitytoolkit.internal.HardwareSecurityDetector
+import com.exxeta.securitytoolkit.internal.HooksDetector
+import com.exxeta.securitytoolkit.internal.RootDetector
+import java.io.Closeable
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
- * Thread detection center exposes the API to check for threats. Use the
+ * Thread detection center exposes the API to check for threats. You can use the
  * variables
- * - [areRootPrivilegesDetected]: to check for root
- * - [areHooksDetected]: to check for injection (hooking) tweaks
- * - [isSimulatorDetected]: to check if the app is running in a simulated
- * environment
- * - [isDeviceWithoutPasscodeDetected]: to check if device is protected with a
- * passcode
- * - [isHardwareProtectionUnavailable]: to check if device can use
+ * - [rootPrivilegesStatus]: to check for root
+ * - [hooksStatus]: to check for injection (hooking) tweaks
+ * - [emulatorStatus]: to check if the app is running in a simulated environment
+ * - [devicePasscodeStatus]: to check if device is protected with a passcode
+ * - [hardwareCryptographyStatus]: to check if device can use
  * hardware-backed cryptography
- * - [hasAppSignatureMissmatch]: extract current app signature and match against
+ * - [appSignatureStatus]: extract current app signature and match against
  * expected one
  *
- * Better (safer) way of detection threats is to use the [threats] Flow.
- * Subscribe to it and collect values - threats that were detected
+ * Better (safer) way of detection threats is to use the [threatReports] Flow.
+ * Subscribe to it and collect values - reports of all current detected threats
+ *
+ * > Important: As the checks are running in background, you should call [close] when you
+ * don't need detection anymore
  *
  * @property context - Application Context, required for multiple checks
+ * @property coroutineDispatcher - dispatcher to use when creating coroutines
+ * @property configuration - additional required configuration to detect threats
  */
-class ThreatDetectionCenter(private val context: Context) {
+class ThreatDetectionCenter(
+    private val context: Context,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val configuration: ThreatDetectionConfiguration =
+        ThreatDetectionConfiguration(),
+) : Closeable {
+
+    private var job: Job? = null
+
+    class ThreatDetectionConfiguration(
+        val periodicDetectionCycle: Duration = 60.seconds,
+        val expectedSignature: String? = null,
+    )
+
+    val threatReports: StateFlow<ThreatReport>
+        get() {
+            job = CoroutineScope(coroutineDispatcher).launch {
+                CoroutineScope(coroutineDispatcher).launch {
+                    flow {
+                        while (true) {
+                            emit(RootDetector.threatDetected(context))
+                            delay(configuration.periodicDetectionCycle)
+                        }
+                    }.collect { updateReport { copy(rootPrivileges = it) } }
+                }
+
+                CoroutineScope(coroutineDispatcher).launch {
+                    flow {
+                        while (true) {
+                            emit(HooksDetector.threatDetected())
+                            delay(configuration.periodicDetectionCycle)
+                        }
+                    }.collect { updateReport { copy(hooks = it) } }
+                }
+
+                CoroutineScope(coroutineDispatcher).launch {
+                    val status = EmulatorDetector.threatDetected()
+                    updateReport { copy(emulator = status) }
+                }
+
+                CoroutineScope(coroutineDispatcher).launch {
+                    flow {
+                        while (true) {
+                            emit(DevicePasscodeDetector.threatDetected(context))
+                            delay(configuration.periodicDetectionCycle)
+                        }
+                    }.collect { updateReport { copy(devicePasscode = it) } }
+                }
+
+                CoroutineScope(coroutineDispatcher).launch {
+                    val status =
+                        HardwareSecurityDetector.threatDetected(context)
+                    updateReport { copy(hardwareCryptography = status) }
+                }
+
+                CoroutineScope(coroutineDispatcher).launch {
+                    updateReport {
+                        copy(
+                            appSignature = AppSignatureDetector.threatDetected(
+                                context,
+                                configuration.expectedSignature,
+                            ),
+                        )
+                    }
+                }
+            }
+            return threatFlow.asStateFlow()
+        }
+
+    private val threatFlow = MutableStateFlow(ThreatReport())
+
+    override fun close() {
+        job?.cancelChildren()
+        job?.cancel()
+    }
+
+    // MARK: - Function API
 
     /**
      * Performs check for root
-     *
-     * @throws [RuntimeException] if root check failed
      */
-    val areRootPrivilegesDetected: Boolean
-        @Throws(RuntimeException::class)
-        get() = RootDetection.threatDetected(context)
+    val rootPrivilegesStatus: ThreatStatus
+        get() = RootDetector.threatDetected(context)
 
     /**
      * Performs check for injection (hooking) libraries
      */
-    val areHooksDetected: Boolean
-        get() = HooksDetection.threatDetected()
+    val hooksStatus: ThreatStatus
+        get() = HooksDetector.threatDetected()
 
     /**
      * Performs check for Emulator / Simulator environment
      */
-    val isSimulatorDetected: Boolean
+    val emulatorStatus: ThreatStatus
         get() = EmulatorDetector.threatDetected()
 
     /**
      * Performs check for Device Passcode presence
-     * Returns `false`, when device is **unprotected**
      */
-    val isDeviceWithoutPasscodeDetected: Boolean
-        get() = DevicePasscodeDetection.threatDetected(context)
+    val devicePasscodeStatus: ThreatStatus
+        get() = DevicePasscodeDetector.threatDetected(context)
 
     /**
      * Performs check for hardware backed encryption presence
-     * Returns `false`, when device does **not** support hardware encryption
-     *
-     * @throws [RuntimeException] if any operations with KeyStore have failed
      */
-    val isHardwareProtectionUnavailable: Boolean
-        get() = HardwareSecurityDetection.threatDetected(context)
+    val hardwareCryptographyStatus: ThreatStatus
+        get() = HardwareSecurityDetector.threatDetected(context)
 
     /**
      * Performs check of app signature (signing certificate SHA-256 hash)
-     * Returns `false`, if expected and current signature does not match
      *
      * More: https://stackoverflow.com/questions/38558623/how-to-find-signature-of-apk-file#61807617
      *
      * > When distributing via PlayStore, use the SHA-256 Hash from Play Console
      *
      * > Otherwise find App signature with apktool
-     *
-     * @throws [RuntimeException] if failed to extract current signature
      */
-    fun hasAppSignatureMissmatch(expectedSignature: String): Boolean =
-        AppSignatureDetection.threatDetected(context, expectedSignature)
+    val appSignatureStatus: ThreatStatus
+        get() = AppSignatureDetector.threatDetected(
+            context,
+            configuration.expectedSignature,
+        )
 
-    /**
-     * Defines a better way to detect threats. Will contain every threat that
-     * is detected
-     */
-    val threats: Flow<Threat>
-        get() = flow {
-            try {
-                if (RootDetection.threatDetected(context)) {
-                    emit(Threat.ROOT_PRIVILEGES)
-                }
-            } catch (_: Throwable) {
-                // ignore here for now, cause is not clear for this exception
-            }
-            if (HooksDetection.threatDetected()) {
-                emit(Threat.HOOKS)
-            }
-            if (EmulatorDetector.threatDetected()) {
-                emit(Threat.SIMULATOR)
-            }
-            if (DevicePasscodeDetection.threatDetected(context)) {
-                emit(Threat.DEVICE_WITHOUT_PASSCODE)
-            }
-            try {
-                if (HardwareSecurityDetection.threatDetected(context)) {
-                    emit(Threat.HARDWARE_PROTECTION_UNAVAILABLE)
-                }
-            } catch (_: Throwable) {
-                // TODO
-            }
-            // TODO: Add app signature check, after ThreatDetectionCenter refactoring
-        }
+    // MARK: - Private API
 
-    /**
-     * Defines all possible threats, that can be reported via the flow
-     */
-    public enum class Threat {
-        ROOT_PRIVILEGES,
-        HOOKS,
-        SIMULATOR,
-        DEVICE_WITHOUT_PASSCODE,
-        HARDWARE_PROTECTION_UNAVAILABLE,
+    private fun updateReport(updateFunction: ThreatReport.() -> ThreatReport) {
+        threatFlow.update { updateFunction(it) }
     }
 }

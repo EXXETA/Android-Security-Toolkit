@@ -3,22 +3,32 @@ package com.exxeta.securitytoolkit.internal
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import com.exxeta.securitytoolkit.ThreatException
+import com.exxeta.securitytoolkit.ThreatNotChecked
+import com.exxeta.securitytoolkit.ThreatNotPresent
+import com.exxeta.securitytoolkit.ThreatPresent
+import com.exxeta.securitytoolkit.ThreatStatus
 import java.security.MessageDigest
 
 /**
  * A Detector object for app signature differences
  */
-internal object AppSignatureDetection {
+internal object AppSignatureDetector {
     private const val SHA_256 = "SHA-256"
 
     /**
      * Exposes public API to assert expected app signature
-     *
-     * @return true if app signature same as expected
-     * @throws [RuntimeException] if failed to extract current signature
      */
-    fun threatDetected(context: Context, expectedHash: String): Boolean =
-        getSigningCertHash(context) != expectedHash
+    fun threatDetected(context: Context, expectedHash: String?): ThreatStatus =
+        try {
+            when (expectedHash) {
+                null -> ThreatNotChecked
+                getSigningCertHash(context) -> ThreatNotPresent
+                else -> ThreatPresent
+            }
+        } catch (e: Throwable) {
+            ThreatException(e)
+        }
 
     /**
      * Will return the SHA-256 Hash of the signing certificate

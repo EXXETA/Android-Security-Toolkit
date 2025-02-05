@@ -2,21 +2,32 @@ package com.exxeta.securitytoolkit.internal
 
 import android.os.Build
 import android.os.Debug
+import com.exxeta.securitytoolkit.ThreatException
+import com.exxeta.securitytoolkit.ThreatNotPresent
+import com.exxeta.securitytoolkit.ThreatPresent
+import com.exxeta.securitytoolkit.ThreatStatus
 import java.io.File
 
 /**
- * A Detector object for Emulators / Simulators
+ * A Detector object for Emulators
  */
 internal object EmulatorDetector {
 
     /**
      * Exposes public API to detect emulators
-     *
-     * @return true if emulator detected
      */
-    fun threatDetected(): Boolean = hasSuspiciousBuildConfiguration() ||
-        hasSuspiciousFiles() ||
-        Debug.isDebuggerConnected()
+    fun threatDetected(): ThreatStatus = try {
+        if (hasSuspiciousBuildConfiguration() ||
+            hasSuspiciousFiles() ||
+            Debug.isDebuggerConnected()
+        ) {
+            ThreatPresent
+        } else {
+            ThreatNotPresent
+        }
+    } catch (e: Throwable) {
+        ThreatException(e)
+    }
 
     private fun hasSuspiciousBuildConfiguration(): Boolean = (
         Build.MANUFACTURER.contains("Genymotion") ||
