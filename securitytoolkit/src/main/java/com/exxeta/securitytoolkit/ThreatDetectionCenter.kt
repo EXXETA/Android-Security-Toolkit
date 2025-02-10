@@ -2,6 +2,7 @@ package com.exxeta.securitytoolkit
 
 import android.content.Context
 import com.exxeta.securitytoolkit.internal.AppSignatureDetection
+import com.exxeta.securitytoolkit.internal.DebuggerDetection
 import com.exxeta.securitytoolkit.internal.DevicePasscodeDetection
 import com.exxeta.securitytoolkit.internal.EmulatorDetector
 import com.exxeta.securitytoolkit.internal.HardwareSecurityDetection
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.flow
  * - [areHooksDetected]: to check for injection (hooking) tweaks
  * - [isSimulatorDetected]: to check if the app is running in a simulated
  * environment
+ * - [isDebuggerDetected]: to check if the app is being traced by a debugger
  * - [isDeviceWithoutPasscodeDetected]: to check if device is protected with a
  * passcode
  * - [isHardwareProtectionUnavailable]: to check if device can use
@@ -51,6 +53,9 @@ class ThreatDetectionCenter(private val context: Context) {
      */
     val isSimulatorDetected: Boolean
         get() = EmulatorDetector.threatDetected()
+
+    val isDebuggerDetected: Boolean?
+        get() = DebuggerDetection.threatDetected()
 
     /**
      * Performs check for Device Passcode presence
@@ -102,6 +107,9 @@ class ThreatDetectionCenter(private val context: Context) {
             if (EmulatorDetector.threatDetected()) {
                 emit(Threat.SIMULATOR)
             }
+            if (DebuggerDetection.threatDetected() == true) {
+                emit(Threat.DEBUGGER)
+            }
             if (DevicePasscodeDetection.threatDetected(context)) {
                 emit(Threat.DEVICE_WITHOUT_PASSCODE)
             }
@@ -122,6 +130,7 @@ class ThreatDetectionCenter(private val context: Context) {
         ROOT_PRIVILEGES,
         HOOKS,
         SIMULATOR,
+        DEBUGGER,
         DEVICE_WITHOUT_PASSCODE,
         HARDWARE_PROTECTION_UNAVAILABLE,
     }
