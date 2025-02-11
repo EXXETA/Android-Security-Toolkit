@@ -54,7 +54,7 @@ class ThreatDetectionCenter(private val context: Context) {
     val isSimulatorDetected: Boolean
         get() = EmulatorDetector.threatDetected()
 
-    val isDebuggerDetected: Boolean?
+    val isDebuggerDetected: Boolean
         get() = DebuggerDetection.threatDetected()
 
     /**
@@ -107,7 +107,7 @@ class ThreatDetectionCenter(private val context: Context) {
             if (EmulatorDetector.threatDetected()) {
                 emit(Threat.SIMULATOR)
             }
-            if (DebuggerDetection.threatDetected() == true) {
+            if (DebuggerDetection.threatDetected()) {
                 emit(Threat.DEBUGGER)
             }
             if (DevicePasscodeDetection.threatDetected(context)) {
