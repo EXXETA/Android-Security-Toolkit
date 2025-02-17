@@ -60,6 +60,11 @@ fun ThreatStatusList() {
             reportedThreats.contains(ThreatDetectionCenter.Threat.SIMULATOR),
         ),
         ThreatStatus(
+            "Debugger",
+            "A tool that allows developers to inspect and modify the execution of a program in real-time, potentially exposing sensitive data or allowing unauthorized control",
+            reportedThreats.contains(ThreatDetectionCenter.Threat.DEBUGGER),
+        ),
+        ThreatStatus(
             "Passcode",
             "Indicates if current device is unprotected with a passcode. Biometric protection requires a passcode to be set up",
             reportedThreats.contains(
