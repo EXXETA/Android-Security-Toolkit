@@ -14,31 +14,34 @@ internal object EmulatorDetector {
      *
      * @return true if emulator detected
      */
-    fun threatDetected(): Boolean {
-        return hasSuspiciousBuildConfiguration() || hasSuspiciousFiles() || Debug.isDebuggerConnected()
-    }
+    fun threatDetected(): Boolean = hasSuspiciousBuildConfiguration() ||
+        hasSuspiciousFiles() ||
+        Debug.isDebuggerConnected()
 
-    private fun hasSuspiciousBuildConfiguration(): Boolean {
-        return (Build.MANUFACTURER.contains("Genymotion")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.lowercase().contains("droid4x")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for x86")
-                || Build.HARDWARE.contains("goldfish")
-                || Build.HARDWARE.contains("ranchu")
-                || Build.HARDWARE.contains("vbox86")
-                || Build.FINGERPRINT.startsWith("generic")
-                || Build.PRODUCT.contains("sdk")
-                || Build.PRODUCT.contains("google_sdk")
-                || Build.PRODUCT.contains("sdk_x86")
-                || Build.PRODUCT.contains("vbox86p")
-                || Build.HARDWARE.lowercase().contains("nox")
-                || Build.PRODUCT.lowercase().contains("nox")
-                || Build.BOARD.lowercase().contains("nox")
-                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith(
-            "generic"
-        )))
-    }
+    private fun hasSuspiciousBuildConfiguration(): Boolean = (
+        Build.MANUFACTURER.contains("Genymotion") ||
+            Build.MODEL.contains("google_sdk") ||
+            Build.MODEL.lowercase().contains("droid4x") ||
+            Build.MODEL.contains("Emulator") ||
+            Build.MODEL.contains("Android SDK built for x86") ||
+            Build.HARDWARE.contains("goldfish") ||
+            Build.HARDWARE.contains("ranchu") ||
+            Build.HARDWARE.contains("vbox86") ||
+            Build.FINGERPRINT.startsWith("generic") ||
+            Build.PRODUCT.contains("sdk") ||
+            Build.PRODUCT.contains("google_sdk") ||
+            Build.PRODUCT.contains("sdk_x86") ||
+            Build.PRODUCT.contains("vbox86p") ||
+            Build.HARDWARE.lowercase().contains("nox") ||
+            Build.PRODUCT.lowercase().contains("nox") ||
+            Build.BOARD.lowercase().contains("nox") ||
+            (
+                Build.BRAND.startsWith("generic") &&
+                    Build.DEVICE.startsWith(
+                        "generic",
+                    )
+                )
+        )
 
     private fun hasSuspiciousFiles(): Boolean {
         val NOX_FILES = arrayOf("fstab.nox", "init.nox.rc", "ueventd.nox.rc")
@@ -54,13 +57,15 @@ internal object EmulatorDetector {
             "fstab.ttVM_x86",
             "fstab.vbox86",
             "init.vbox86.rc",
-            "ueventd.vbox86.rc"
+            "ueventd.vbox86.rc",
         )
-        return (checkFiles(GENY_FILES)
-                || checkFiles(ANDY_FILES)
-                || checkFiles(NOX_FILES)
-                || checkFiles(X86_FILES)
-                || checkFiles(PIPES))
+        return (
+            checkFiles(GENY_FILES) ||
+                checkFiles(ANDY_FILES) ||
+                checkFiles(NOX_FILES) ||
+                checkFiles(X86_FILES) ||
+                checkFiles(PIPES)
+            )
     }
 
     private fun checkFiles(targets: Array<String>): Boolean {
