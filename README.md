@@ -60,7 +60,7 @@ Import in project `build.gradle.kts`:
 
 ```
 dependencies {
-    implementation("com.github.EXXETA:Android-Security-Toolkit:1.0.1")
+    implementation("com.github.EXXETA:Android-Security-Toolkit:1.1.0")
 }
 ```
 
